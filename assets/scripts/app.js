@@ -15,9 +15,32 @@ class DOMHelper {
 }
 
 class Tooltip {
+    constructor(closeNotifierFunction) {
+        this.closeNotifier = closeNotifierFunction;
+    }
+
+    closeTooltip = () => {
+        this.detach();
+        this.closeNotifier();
+    }
+
+    detach() {
+        this.element.remove();
+    }
+
+    attach() {
+        const tooltipElement = document.createElement('div');
+        tooltipElement.className = 'card';
+        tooltipElement.textContent = 'DUMMY!';
+        tooltipElement.addEventListener('click', this.closeTooltip);
+        this.element = tooltipElement;
+        document.body.append(tooltipElement);
+    }
 }
 
 class ProjectItem {
+
+    hasActiveTooltip = false;
 
     // create the id
     constructor(id, updateProjectListsFunction, type) {
@@ -27,7 +50,22 @@ class ProjectItem {
         this.connectSwitchButton(type);
     }
 
-    connectMoreInfoButton() {}
+    showMoreInfoHandler() {
+        if (this.hasActiveTooltip) {
+            return;
+        }
+        const tooltip = new Tooltip(() => {
+            this.hasActiveTooltip = false;
+        });
+        tooltip.attach();
+        this.hasActiveTooltip = true;
+    }
+
+    connectMoreInfoButton() {
+        const projectItemElement = document.getElementById(this.id);
+        const moreInfoBtn = projectItemElement.querySelector('button:first-of-type')
+        moreInfoBtn.addEventListener('click', this.showMoreInfoHandler)
+    }
 
     connectSwitchButton(type) {
         // id that we are storing in the constructor
